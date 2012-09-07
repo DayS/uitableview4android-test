@@ -13,6 +13,8 @@ import fr.days.android.uitableview.listener.OnHeaderClickListener;
 import fr.days.android.uitableview.listener.OnHeaderLongClickListener;
 import fr.days.android.uitableview.model.AccessoryType;
 import fr.days.android.uitableview.model.IndexPath;
+import fr.days.android.uitableview.model.UITableCellItem;
+import fr.days.android.uitableview.model.UITableHeaderItem;
 import fr.days.android.uitableview.view.UITableCellView;
 import fr.days.android.uitableview.view.UITableHeaderView;
 import fr.days.android.uitableview.view.UITableView;
@@ -59,47 +61,77 @@ public class UITableViewTest extends Activity {
 		public int numberOfRows(int group) {
 			switch (group) {
 			case 0:
-				return 3;
+				return 5;
 			case 1:
-				return 5;
-			case 2:
 				return 3;
-			case 3:
+			case 2:
 				return 5;
+			case 3:
+				return 3;
 			}
 			return 0;
 		}
 
 		@Override
-		public UITableHeaderView headerForGroup(Context context, IndexPath indexPath) {
-			return new UITableHeaderView(context, indexPath, "group " + indexPath.getGroup());
+		public UITableHeaderItem headerItemForGroup(Context context, IndexPath indexPath) {
+			return new UITableHeaderItem("group " + indexPath.getGroup());
 		}
 
 		@Override
-		public UITableCellView cellViewForRow(Context context, IndexPath indexPath) {
+		public UITableCellItem cellItemForRow(Context context, IndexPath indexPath) {
 			String title = "Cell number " + indexPath.getRow() + " in group " + indexPath.getGroup() + " bla bla bla";
 			String subtitle = (indexPath.getRow() % 2 == 0) ? "Subtitle " + indexPath.getRow() : null;
-			UITableCellView cellView = new UITableCellView(context, indexPath, title, subtitle);
-			cellView.setMinimumHeight(80);
+			return new UITableCellItem(title, subtitle);
+		}
 
-			// Image
-			if (indexPath.getRow() % 3 == 0)
-				cellView.setImage(getResources().getDrawable(R.drawable.ic_launcher));
-			if (indexPath.getRow() % 3 == 1)
-				cellView.setImage(R.drawable.ic_action_search);
+		@Override
+		public UITableHeaderView headerViewForGroup(Context context, IndexPath indexPath, UITableHeaderItem headerItem, UITableHeaderView convertView) {
+			UITableHeaderView headerView;
+			if (convertView == null) {
+				headerView = new UITableHeaderView(context, indexPath);
+			} else {
+				headerView = (UITableHeaderView) convertView;
+			}
+			headerView.setTitle(headerItem.title);
 
-			// Accessory
-			if (indexPath.getRow() % 3 != 0) {
-				cellView.setAccessory(AccessoryType.DISCLOSURE);
+			return headerView;
+		}
+
+		@Override
+		public UITableCellView cellViewForRow(Context context, IndexPath indexPath, UITableCellItem cellItem, UITableCellView convertView) {
+			UITableCellView cellView;
+			if (convertView == null) {
+				cellView = new UITableCellView(context, indexPath);
+				cellView.setMinimumHeight(80);
+			} else {
+				cellView = (UITableCellView) convertView;
 			}
 
-			// Set alternated background color
+			cellView.setTitle(cellItem.title);
+			cellView.setSubtitle(cellItem.subtitle);
+
 			if (indexPath.getGroup() % 2 == 0) {
+				// Image
+				if (indexPath.getRow() % 3 == 0)
+					cellView.setImage(getResources().getDrawable(R.drawable.ic_launcher));
+				if (indexPath.getRow() % 3 == 1)
+					cellView.setImage(R.drawable.ic_action_search);
+
+				// Accessory
+				if (indexPath.getRow() % 3 != 0) {
+					cellView.setAccessory(AccessoryType.DISCLOSURE);
+				}
+
+				// Set alternated background color
 				if (indexPath.getRow() % 2 == 0) {
 					cellView.setBackgroundColor(color_line1_default, color_line1_pressed);
 				} else {
 					cellView.setBackgroundColor(color_line2_default, color_line2_pressed);
 				}
+			} else {
+				cellView.setImage((Integer) null);
+				cellView.setAccessory(AccessoryType.NONE);
+				cellView.setBackgroundColor(color_line2_default, color_line2_pressed);
 			}
 
 			return cellView;
